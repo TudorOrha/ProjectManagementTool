@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html>
+<title>Project</title>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="Project.css">
+</head>
+<body>
+	<div align="center">
+		<div class="panel-body">
+			<table class="table table-striped table-bordered table-list">
+				<thead><tr>
+					<th>SprintId</th>
+					<th>SprintName</th>
+					<th>NumberOfFeatures</th>
+					<th>NumberOfBugs</th>
+					<th>NumberOfTasks</th>
+				</tr></thead>
+				<tbody id="SprintTable"></tbody>
+			</table>
+		<div class="panel-body">
+			<label>SprintName:</label>
+			<input type="text" id="sprintName"> </input>
+			<button onclick="addSprint()"> Add sprint </button>
+		</div>
+		<div class="panel-body">
+			<label>Status:</label>
+			<select id="status">
+				<option value="All">All</option>
+				<option value="New">New</option>
+				<option value="In progress">In progress</option>
+				<option value="Feedback">Feedback</option>
+				<option value="Rework">Rework</option>
+				<option value="Resolved">Resolved</option>
+				<option value="Ready For Testing">Ready For Testing</option>
+			</select>
+			<button onclick="loadStatusIssues()"> Filter issues by status </button>
+		</div>
+		<div class="panel-body">
+			Click on a row to filter by sprint
+		</div>
+	</div>
+<script src="classes.js"></script>
+<script>
+
+// Loads a row in the table, with the given sprint
+function loadRow(sprint) {
+	let table = document.getElementById("SprintTable");
+	let row = table.insertRow();
+	let sprintID = row.insertCell(0);
+	let sprintName = row.insertCell(1);
+	let sprintFeatures = row.insertCell(2);
+	let sprintBugs = row.insertCell(3);
+	let sprintTasks = row.insertCell(4);
+	// On clicking a row, a page with issues filtered by sprint will open
+	row.onclick = function goToSprint() {
+		localStorage.setItem("currentSprintID", sprint.id);
+		localStorage.setItem("currentIssueStatus", NaN);
+		window.open("Issues.html","_self",false);
+	}
+	sprintID.innerHTML = sprint.id;
+	sprintName.innerHTML = sprint.name;
+	sprintFeatures.innerHTML = sprint.countTypeOfIssue("Feature");
+	sprintBugs.innerHTML = sprint.countTypeOfIssue("Bug");
+	sprintTasks.innerHTML = sprint.countTypeOfIssue("Task");
+}
+
+// Opens a new page with issues filtered by status
+function loadStatusIssues() {
+	const status = document.getElementById("status").value;
+	localStorage.setItem("currentSprintID", NaN);
+	localStorage.setItem("currentIssueStatus", status);
+	window.open("Issues.html","_self",false);
+}
+
+// Loads all the data into the sprints table
+function loadSprints() {
+	let sprints = JSON.parse(localStorage.getItem("sprints"));
+	for (let i = 0; i < sprints.length; i++) {
+		// Converting from javascript object back to sprint
+		let sprint = new Sprint(sprints[i].id,sprints[i].name);
+		loadRow(sprint);
+	}
+}
+
+// Adds a sprint into the localStorage and loads the data into the table
+function addSprint() {
+	let name = document.getElementById("sprintName").value;
+	let sprint = new Sprint(name);
+	loadRow(sprint);
+	let sprints = JSON.parse(localStorage.getItem("sprints"));
+	sprints.push(sprint);
+	localStorage.setItem("sprints", JSON.stringify(sprints));
+}
+
+loadSprints();
+
+</script>
+</body>
+</html>

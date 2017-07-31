@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html>
+<title>InitPage</title>
+<head>
+</head>
+<body>
+<button onclick="initializeData()"> Load hardcoded data </button>
+<button onclick="goToProject()"> Go to sprints </button>
+<script src="classes.js"></script>
+<script>
+// Some hard-coded data
+function initializeData(){	
+	// Initializing ids
+	localStorage.setItem("nextUserID",0); 	
+	localStorage.setItem("nextSprintID",0); 	
+	localStorage.setItem("nextIssueID",0);
+	localStorage.setItem("nextCommentID",0);
+	// User data
+	const user1 = new User("Daniel");
+	const user2 = new User("George");
+	let users = [user1, user2];
+	localStorage.setItem("users", JSON.stringify(users));
+	// Logged in as Daniel
+	localStorage.setItem("currentUserID", user1.id);
+	// Sprint data
+	const sprint1 = new Sprint("Sprint1");
+	const sprint2 = new Sprint("Sprint2");
+	const sprint3 = new Sprint("Sprint3");
+	let sprints = [sprint1, sprint2, sprint3];
+	// Storing sprints in localStorage
+	localStorage.setItem("sprints", JSON.stringify(sprints));
+	// Issue data
+	// type, name, sprintID, asigneeID, description, status, tasks, comments --- params required
+	const issue1 = new Issue("Feature", "Feature1", sprint3.id, user1.id, "descFeature1", "New", [], []);
+	const issue2 = new Issue("Feature", "Feature2", sprint1.id, user2.id, "descFeature2", "New", [], []);
+	const issue3 = new Issue("Feature", "Feature3", sprint2.id, user1.id, "descFeature3", "New", [], []);
+	const issue4 = new Issue("Feature", "Feature4", sprint2.id, user2.id, "descFeature4", "New", [], []);
+	const issue5 = new Issue("Bug", "Bug1", sprint1.id, user1.id, "descBug1", "New", [], []);
+	const issue6 = new Issue("Task", "Task1", sprint3.id, user2.id, "descTask1", "New", [], []);
+	const issue7 = new Issue("Task", "Task2", sprint3.id, user1.id, "descTask2", "New", [], []);
+	let issues = [issue1, issue2, issue3, issue4, issue5, issue6, issue7];
+	localStorage.setItem("issues", JSON.stringify(issues));
+	// Logged in as George
+	localStorage.setItem("currentUserID", user2.id);
+}
+
+// Opens a new page with sprints
+function goToProject(){
+	window.open("Project.html","_self",false);
+}
+</script>
+</body>
+</html>

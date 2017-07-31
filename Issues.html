@@ -1,0 +1,349 @@
+<!DOCTYPE HTML>
+<html>
+<title>Issues</title>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="Issues.css">
+</head>
+<body>
+	<div align="center">
+		<div class="panel-body">
+			<table class="table table-striped table-bordered table-list">
+				<thead><tr>
+					<th>Id</th>
+					<th>Name</th>
+					<th>Type</th>
+					<th>SprintID</th>
+					<th>CreatorID</th>
+					<th>AsigneeID</th>
+					<th>Description</th>
+					<th>Status</th>
+					<th>Created at</th>
+					<th>Updated at</th>
+					<th>Nr. subtasks</th>
+					<th>Nr. Comments</th>
+				</tr></thead>
+				<tbody id="IssueTable"></tbody>
+			</table>
+		</div>
+		<div class="panel-body" align="center" style="display:inline-block;">
+			<form>
+				<label for="issueNameAdd">Name:</label>
+				<input type="text" id="issueNameAdd"><br>
+				<label for="sprintAdd" >Sprint:</label>
+				<input type="text" id="sprintAdd"><br>
+				<label for="asigneeAdd">Asignee:</label>
+				<input type="text" id="asigneeAdd"><br>
+				<label for="descriptionAdd">Description:</label>
+				<input type="text" id="descriptionAdd"><br>
+				<label for="typeAdd">Type:</label>
+				<select id="typeAdd">
+					<option value="Feature">Feature</option>
+					<option value="Bug">Bug</option>
+					<option value="Task">Task</option>
+				</select>
+			</form>
+			<label></label><button onclick="addIssue()"> Add issue </button>
+		</div>
+		<div class="panel-body" align="center" style="display:inline-block;">
+			<form>
+				<label for="issueID">IssueID:</label>
+				<input type="text" id="issueID"><br>
+				<label for="issueName">Name:</label>
+				<input type="text" id="issueName"><br>
+				<label for="sprint" >Sprint:</label>
+				<input type="text" id="sprint"><br>
+				<label for="asignee">Asignee:</label>
+				<input type="text" id="asignee"><br>
+				<label for="description">Description:</label>
+				<input type="text" id="description"><br>
+				<label for="type">Type:</label>
+				<select id="type">
+					<option value="Feature">Feature</option>
+					<option value="Bug">Bug</option>
+					<option value="Task">Task</option>
+				</select><br>
+				<label for="status">Status:</label>
+				<select id="status">
+					<option value="New">New</option>
+					<option value="In progress">In progress</option>
+					<option value="Feedback">Feedback</option>
+					<option value="Rework">Rework</option>
+					<option value="Resolved">Resolved</option>
+				</select>
+			</form>
+			<label></label><button onclick="updateIssue()"> Update issue </button>
+		</div>
+		<div class="panel-body" align="center" style="display:inline-block;">
+			<form>
+				<label for="parentID">ParentID:</label>
+				<input type="text" id="parentID"><br>
+				<label for="subtaskID">SubtaskID:</label>
+				<input type="text" id="subtaskID"><br>
+			</form>
+			<label></label><button onclick="addSubtask()">Change to subtask</button>
+		</div>
+		<div class="panel-body" align="center" style="display:inline-block;">
+			<form>
+				<label for="issueIDcomm">IssueID:</label>
+				<input type="text" id="issueIDComm"><br>
+				<label for="comment">Comment:</label>
+				<input type="text" id="comment"><br>
+			</form>
+			<label></label><button onclick="addComment()">Add a comment</button>
+		</div>
+	</div>
+<script src="classes.js"></script>
+<script>
+
+// Loads a row in the table, with the given issue, only if its part of the filter
+function loadRow(issue) {
+	if (
+		localStorage.getItem("currentIssueStatus") === issue.status
+		|| localStorage.getItem("currentSprintID") === issue.sprint
+		|| localStorage.getItem("currentIssueStatus") === "All"
+	) {
+		const table = document.getElementById("IssueTable");
+		const row = table.insertRow();
+		const issueID = row.insertCell(0);
+		const issueName = row.insertCell(1);
+		const issueType = row.insertCell(2);
+		const sprintID = row.insertCell(3);
+		const creatorID = row.insertCell(4);
+		const asigneeID = row.insertCell(5);
+		const description = row.insertCell(6);
+		const status = row.insertCell(7);
+		const createdAt = row.insertCell(8);
+		const updatedAt = row.insertCell(9);
+		const nrOfSubtasks = row.insertCell(10);
+		const nrOfComments = row.insertCell(11);
+		issueID.innerHTML = issue.id;
+		issueName.innerHTML = issue.name;
+		issueType.innerHTML = issue.type;
+		sprintID.innerHTML = issue.sprint;
+		creatorID.innerHTML = issue.createdBy;
+		asigneeID.innerHTML = issue.asignee;
+		description.innerHTML = issue.description;
+		status.innerHTML = issue.status;
+		createdAt.innerHTML = issue.createdAt;
+		updatedAt.innerHTML = issue.updatedAt;
+		nrOfSubtasks.innerHTML = issue.tasks.length;
+		nrOfComments.innerHTML = issue.comments.length;
+	}
+}
+
+// Reloads the table after an update took place.
+function reloadTable() {
+	const table = document.getElementById("IssueTable");
+	let i = table.rows.length;
+	while (i--) {
+		table.deleteRow(i);
+	}
+	loadIssues();
+
+}
+
+// Loads all the data into the issues table
+function loadIssues() {
+	const issues = JSON.parse(localStorage.getItem("issues"));
+	for (let i = 0; i < issues.length; i++) {
+		loadRow(issues[i]);
+	}
+}
+
+// Checks if the asignees id exists.
+function validateAsignee(asigneeID) {
+	const users = JSON.parse(localStorage.getItem("users"));
+	for (let i = 0; i < users.length; i++) {
+		if (asigneeID == users[i].id) return true;
+	}
+	return false;
+}
+
+// Checks if the sprints id exists.
+function validateSprint(sprintID) {
+	const sprints = JSON.parse(localStorage.getItem("sprints"));
+	for (let i = 0; i < sprints.length; i++) {
+		if (sprintID == sprints[i].id) return true;
+	}
+	return false;
+}
+
+// Checks if the issues id exists.
+function validateIssue(issueID) {
+	const issues = JSON.parse(localStorage.getItem("issues"));
+	for (let i = 0; i < issues.length; i++) {
+		if (issueID == issues[i].id) return true;
+	}
+	return false;
+}
+
+// Check if the issues id exists, and if the issue is a task.
+function validateTask(issueID) {
+	const issues = JSON.parse(localStorage.getItem("issues"));
+	for (let i = 0; i < issues.length; i++) {
+		if (issueID == issues[i].id && issues[i].type === "Task") return true;
+	}
+	return false;
+}
+
+// Check if the issues id exists, and if the issue is a feature/bug.
+function validateParentIssue(issueID) {
+	const issues = JSON.parse(localStorage.getItem("issues"));
+	for (let i = 0; i < issues.length; i++) {
+		if (issueID == issues[i].id && (issues[i].type === "Feature" || issues[i].type === "Bug")) return true;
+	}
+	return false;
+}
+
+// Check if both tasks are in the same sprint
+function validateSprintAppartenance(parentID, subtaskID) {
+	const issues = JSON.parse(localStorage.getItem("issues"));
+	let parentSprint = -1;
+	let subtaskSprint = -1;
+	for (let i = 0; i < issues.length; i++) {
+		if (parentID == issues[i].id) parentSprint = issues[i].sprint;
+		if (subtaskID == issues[i].id) subtaskSprint = issues[i].sprint;
+	}
+	if (parentSprint === subtaskSprint) return true;
+	return false;
+}
+
+// Adds an issue into the localStorage and loads the data into the table
+function addIssue() {
+	const sprint = document.getElementById("sprintAdd").value;
+	const asignee = document.getElementById("asigneeAdd").value;
+	if (validateAsignee(asignee) && validateSprint(sprint)) {
+		const type = document.getElementById("typeAdd").value;
+		const name = document.getElementById("issueNameAdd").value;
+		const description = document.getElementById("descriptionAdd").value;
+		const tasks = [];
+		const comments = [];
+		// Style might be bad
+		let issue = new Issue(type, name, sprint, asignee,
+							  description, "New", tasks, comments);
+		loadRow(issue);
+		let issues = JSON.parse(localStorage.getItem("issues"));
+		issues.push(issue);
+		localStorage.setItem("issues", JSON.stringify(issues));
+	}
+	else if (!validateAsignee(asignee)) alert("Given asignee ID does not exist!");
+	else if (!validateSprint(sprint)) alert("Given sprint ID does not exist!");
+}
+
+// Moves given tasks into the given sprint
+function moveSubtasksIntoParentSprint(tasks, sprintID) {
+	let issues = JSON.parse(localStorage.getItem("issues"));
+	for (let i = 0; i < issues.length; i++) {
+		for (let j = 0; j < tasks.length; j++) {
+			if (issues[i].id === tasks[j]) issues[i].sprint = sprintID;  
+		}
+	}
+	localStorage.setItem("issues", JSON.stringify(issues));
+}
+
+// Verifies if all subtasks of a parent are completed
+function verifyParentReadyForTesting(parentID) {
+	let issues = JSON.parse(localStorage.getItem("issues"));
+	let tasks = [];
+	for (let i = 0; i < issues.length; i++) {
+		if (parentID === issues[i].id) tasks = issues[i].tasks;
+		break;
+	}
+	for (let i = 0 ; i < issues.length; i++) {
+		for (let j = 0; j < tasks.length; j++) {
+			if (issues[i].id === tasks[j] && issues[i].status != "Resolved") return false;
+		}
+	}
+	for (let i = 0; i < issues.length; i++) {
+		if (parentID === issues[i].id) issues[i].status = "Ready For Testing";
+		break;
+	}
+	localStorage.setItem("issues", JSON.stringify(issues));
+}
+
+// Updates an issue in both localStorage and table.
+function updateIssue() {
+	const id = document.getElementById("issueID").value;
+	const sprint = document.getElementById("sprint").value;
+	const asignee = document.getElementById("asignee").value;
+	if (validateAsignee(asignee) && validateSprint(sprint) && validateIssue(id)) {
+		const type = document.getElementById("type").value;
+		const name = document.getElementById("issueName").value;
+		const description = document.getElementById("description").value;
+		const status = document.getElementById("status").value;
+		let issues = JSON.parse(localStorage.getItem("issues"));
+		for (let i = 0; i < issues.length; i++) {
+			if (issues[i].id == id) {
+				issues[i].type = type;
+				issues[i].name = name;
+				issues[i].sprint = sprint;
+				issues[i].asignee = asignee;
+				issues[i].description = description;
+				issues[i].status = status;
+				issues[i].updatedAt = formatDate(new Date());
+				localStorage.setItem("issues", JSON.stringify(issues));
+				// Move children into the same sprint
+				moveSubtasksIntoParentSprint(issues[i].tasks, sprint);
+				// Verify if parent is ready for testing
+				if (issues[i].status === "Resolved") verifyParentReadyForTesting(issues[i].parentID);
+				break;
+			}
+		}
+		reloadTable();
+	}
+	else if (!validateAsignee(asignee)) alert("Given asignee ID does not exist!");
+	else if (!validateSprint(sprint)) alert("Given sprint ID does not exist!");
+	else if (!validateIssue(id)) alert("Given issue ID does not exist!");
+}
+
+
+// Converts a task to a subtask
+function addSubtask() {
+	const parentID = document.getElementById("parentID").value;
+	const subtaskID = document.getElementById("subtaskID").value;
+	if (validateParentIssue(parentID) && validateTask(subtaskID) && validateSprintAppartenance(parentID,subtaskID)) {
+		let issues = JSON.parse(localStorage.getItem("issues"));
+		for (let i = 0; i < issues.length; i++) {
+			// Not geting duplicate ids into subtasks
+			if (parentID == issues[i].id && issues[i].tasks.indexOf(subtaskID) === -1) {
+				issues[i].tasks.push(subtaskID);
+			}
+			else if (parentID == issues[i].id && issues[i].tasks.indexOf(subtaskID) != -1) {
+				alert("Task is already a subtask!");
+			}
+			if (subtaskID == issues[i].id) {
+				issues[i].parentID = parentID;
+			}
+		}
+		localStorage.setItem("issues", JSON.stringify(issues));
+		reloadTable();
+	}
+	else if (!validateParentIssue(parentID)) alert("Parent issue ID does not exist, or is not a Feature/Bug!");
+	else if (!validateTask(subtaskID)) alert("Subtask ID does not exist, or is not a task!");
+	else if (!validateSprintAppartenance(parentID,subtaskID)) alert("Parent and subtask should be from same sprint!");
+}
+
+// Adds a comment to a given issue
+function addComment() {
+	let issues = JSON.parse(localStorage.getItem("issues"));
+	const id = document.getElementById("issueIDComm").value;
+	if (validateIssue(id)) {
+		const text = document.getElementById("comment").value;
+		const comment = new Comment(text);
+		for (let i = 0; i < issues.length; i++) {
+			if (id === issues[i].id) {
+				issues[i].comments.push(comment.id);
+				break;
+			}
+		}
+		localStorage.setItem("issues", JSON.stringify(issues));
+		reloadTable();
+	}
+	else if (!validateIssue()) alert("Given issue ID dose not exist!");
+}
+
+loadIssues();
+</script>
+</body>
+</html>

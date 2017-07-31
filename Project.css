@@ -1,0 +1,32 @@
+th {
+	vertical-align: middle;
+	text-align: center;
+}
+
+thead {
+	color:white;
+	background-color:#ed2553;
+}
+
+tbody {
+	vertical-align: middle;
+	text-align: center;
+}
+
+label {
+	width: 130px;
+	text-align: right;
+}
+
+button {
+	width: 160px;
+}
+
+select {
+	width: 175px;
+}
+
+label {
+	width: 90px;
+}
+		
