@@ -45,13 +45,13 @@
 
 // Loads a row in the table, with the given sprint
 function loadRow(sprint) {
-	let table = document.getElementById("SprintTable");
-	let row = table.insertRow();
-	let sprintID = row.insertCell(0);
-	let sprintName = row.insertCell(1);
-	let sprintFeatures = row.insertCell(2);
-	let sprintBugs = row.insertCell(3);
-	let sprintTasks = row.insertCell(4);
+	const table = document.getElementById("SprintTable");
+	const row = table.insertRow();
+	const sprintID = row.insertCell(0);
+	const sprintName = row.insertCell(1);
+	const sprintFeatures = row.insertCell(2);
+	const sprintBugs = row.insertCell(3);
+	const sprintTasks = row.insertCell(4);
 	// On clicking a row, a page with issues filtered by sprint will open
 	row.onclick = function goToSprint() {
 		localStorage.setItem("currentSprintID", sprint.id);
@@ -75,22 +75,25 @@ function loadStatusIssues() {
 
 // Loads all the data into the sprints table
 function loadSprints() {
-	let sprints = JSON.parse(localStorage.getItem("sprints"));
+	const sprints = JSON.parse(localStorage.getItem("sprints"));
 	for (let i = 0; i < sprints.length; i++) {
 		// Converting from javascript object back to sprint
-		let sprint = new Sprint(sprints[i].id,sprints[i].name);
+		const sprint = new Sprint(sprints[i].id,sprints[i].name);
 		loadRow(sprint);
 	}
 }
 
 // Adds a sprint into the localStorage and loads the data into the table
 function addSprint() {
-	let name = document.getElementById("sprintName").value;
-	let sprint = new Sprint(name);
-	loadRow(sprint);
-	let sprints = JSON.parse(localStorage.getItem("sprints"));
-	sprints.push(sprint);
-	localStorage.setItem("sprints", JSON.stringify(sprints));
+	const name = document.getElementById("sprintName").value;
+	if (name) {
+		const sprint = new Sprint(name);
+		loadRow(sprint);
+		let sprints = JSON.parse(localStorage.getItem("sprints"));
+		sprints.push(sprint);
+		localStorage.setItem("sprints", JSON.stringify(sprints));
+	}
+	else alert("Sprint name should not be empty!");
 }
 
 loadSprints();
